@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('cities', function (Blueprint $table) {
+        Schema::table('cityies', function (Blueprint $table) {
             $table->string("country")->after('id')->change();
             $table->string('province')->change();
             $table->string("district")->change();

@@ -9,6 +9,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use App\Models\City;
+use function Brotli\compress;
 
 class WeatherMonitorCommand extends Command
 {
@@ -45,6 +46,7 @@ class WeatherMonitorCommand extends Command
 
                 if($response->successful()) {
                     $weatherData = $response->json();
+
                     // append data to the weather_records table
                     Weather_records::create([
                         'city_id' => $city->id,
@@ -68,11 +70,12 @@ class WeatherMonitorCommand extends Command
                             ]
                         );
                         if($pyResponse->successful()) {
-                            echo "Successful python server response".$pyResponse->json().PHP_EOL;
-
+                            $generatedAlerts = $pyResponse->json()['alerts'];
                             //  (if any data received) insert data to the generated_alerts table ..........
 
+                            foreach ($generatedAlerts as $alerts) {
 
+                            }
                         } else {
                             echo 'Python server response failed';
                         }

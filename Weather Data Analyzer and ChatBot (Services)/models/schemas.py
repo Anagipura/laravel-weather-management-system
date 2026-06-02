@@ -16,4 +16,6 @@ class ChatRequest(BaseModel):
     weather_description: Optional[str] = None
 
 class SmartAlertRequest(BaseModel):
-    
+    weatherData: Optional[dict] = None
+
+
