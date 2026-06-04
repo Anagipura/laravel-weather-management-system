@@ -15,7 +15,6 @@ class ChatRequest(BaseModel):
     wind_speed: Optional[float] = None
     weather_description: Optional[str] = None
 
+
 class SmartAlertRequest(BaseModel):
     weatherData: Optional[dict] = None
-
-

@@ -2,95 +2,193 @@
 
 namespace App\Console\Commands;
 
+use App\Models\City;
+use App\Models\Pending_alerts;
 use App\Models\Weather_records;
-use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use App\Models\City;
-use function Brotli\compress;
+use Illuminate\Support\Facades\Log;
 
 class WeatherMonitorCommand extends Command
 {
     /**
-     * The name and signature of the console command.
-     *
-     * @var string
+     * Command Signature
      */
     protected $signature = 'weather:monitor';
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Monitor weather and generate alerts';
 
     /**
-     * Execute the console command.
+     * Command Description
+     */
+    protected $description = 'Monitor weather conditions and generate smart alerts';
+
+    /**
+     * Execute the command
      */
     public function handle()
     {
-        $cities = City::all();
-         //echo $cities . PHP_EOL;
+        $cities = City::where('is_active', true)->get();
+
         foreach ($cities as $city) {
+
             try {
-                $response = Http::timeout(15)->withoutVerifying()->get(
-                    'https://api.openweathermap.org/data/2.5/weather',[
-                        'lat'=> $city->latitude,
-                        'lon'=> $city->longitude,
-                        'appid' => env('OPENWEATHER_API_KEY'),
-                        'units' => 'metric'
-                    ]
-                );
 
-                if($response->successful()) {
-                    $weatherData = $response->json();
+                // Fetch weather data
+                $response = Http::timeout(15)
+                    ->withoutVerifying()
+                    ->get(
+                        'https://api.openweathermap.org/data/2.5/weather',
+                        [
+                            'lat' => $city->latitude,
+                            'lon' => $city->longitude,
+                            'appid' => env('OPENWEATHER_API_KEY'),
+                            'units' => 'metric'
+                        ]
+                    );
 
-                    // append data to the weather_records table
-                    Weather_records::create([
-                        'city_id' => $city->id,
-                        'temperature' => $weatherData['main']['temp'],
-                        'humidity' => $weatherData['main']['humidity'],
-                        'wind_speed' => $weatherData['wind']['speed'],
-                        'pressure' => $weatherData['main']['pressure'],
-                        'rainfall' => $weatherData['rain']['1h'] ?? 0, // Rain in last hour (if available)
-                        'description' => $weatherData['weather'][0]['description'],
-                        'weather_main' => $weatherData['weather'][0]['main'],
-                        'recorded_at'=> now(),
-                        'created_at'=> now(),
-                        'updated_at'=> now()
-                    ]);
+                if (!$response->successful()) {
 
-                    // send weather data to the python server
-                    try {
-                        $pyResponse = Http::post(
-                            'http://127.0.0.1:8001/generateSmartAlerts',[
-                                'weatherData'=>$weatherData
-                            ]
-                        );
-                        if($pyResponse->successful()) {
-                            $generatedAlerts = $pyResponse->json()['alerts'];
-                            //  (if any data received) insert data to the generated_alerts table ..........
+                    Log::error(
+                        "OpenWeather API request failed for city: {$city->cityName}"
+                    );
 
-                            foreach ($generatedAlerts as $alerts) {
-
-                            }
-                        } else {
-                            echo 'Python server response failed';
-                        }
-                    } catch(ConnectionException $e) {
-                        \Log::error('PYthon Server Error!'. $e->getMessage());
-                    }
-
-                } else {
-                   \Log::error('Http Request unsuccessful');
+                    continue;
                 }
 
-            } catch (ConnectException $e) {
-                \Log::error('Can not perform Shedular task! Connection Error'. $e->getMessage());
+                $weatherData = $response->json();
+
+                // Store weather record
+                $weatherRecord = Weather_records::create([
+                    'city_id'       => $city->id,
+                    'temperature'   => $weatherData['main']['temp'],
+                    'humidity'      => $weatherData['main']['humidity'],
+                    'wind_speed'    => $weatherData['wind']['speed'],
+                    'pressure'      => $weatherData['main']['pressure'],
+                    'rainfall'      => $weatherData['rain']['1h'] ?? 0,
+                    'description'   => $weatherData['weather'][0]['description'],
+                    'weather_main'  => $weatherData['weather'][0]['main'],
+                    'recorded_at'   => now(),
+                ]);
+
+                Log::info(
+                    "Weather data stored for city: {$city->cityName}"
+                );
+
+                // Send data to Python Alert Analyzer
+                try {
+
+                    $pyResponse = Http::timeout(10)->post(
+                        'http://127.0.0.1:8001/generateSmartAlerts',
+                        [
+                            'weatherData' => $weatherData
+                        ]
+                    );
+
+                    if (!$pyResponse->successful()) {
+
+                        Log::error(
+                            "Python analyzer failed. Status: " .
+                            $pyResponse->status()
+                        );
+
+                        continue;
+                    }
+
+                    $generatedAlerts =
+                        $pyResponse->json()['alerts'] ?? [];
+
+                    Log::info(
+                        'Generated Alerts',
+                        $generatedAlerts
+                    );
+
+                    foreach ($generatedAlerts as $alert) {
+
+                        // Prevent duplicate pending alerts
+                        $exists = Pending_alerts::where(
+                            'city_id',
+                            $city->id
+                        )
+                            ->where(
+                                'title',
+                                $alert['title']
+                            )
+                            ->where(
+                                'status',
+                                'pending'
+                            )
+                            ->exists();
+
+                        if ($exists) {
+
+                            Log::info(
+                                "Duplicate alert skipped for city: {$city->cityName}"
+                            );
+
+                            continue;
+                        }
+
+                        Pending_alerts::create([
+
+                            'city_id' => $city->id,
+
+                            'weather_record_id' =>
+                                $weatherRecord->id,
+
+                            'title' =>
+                                $alert['title']
+                                ?? 'Generated Alert',
+
+                            'message' =>
+                                $alert['message']
+                                ?? 'Weather anomaly detected.',
+
+                            'type' =>
+                                $alert['type']
+                                ?? 'general',
+
+                            'location' =>
+                                $city->country,
+
+                            'severity' =>
+                                $alert['severity']
+                                ?? 'medium',
+
+                            'risk_score' =>
+                                $alert['risk_score']
+                                ?? 50,
+
+                            'status' =>
+                                'pending',
+
+                            'source' =>
+                                'python_alert_analyzer'
+                        ]);
+
+                        Log::info(
+                            "Pending alert created for city: {$city->cityName}"
+                        );
+                    }
+
+                } catch (ConnectionException $e) {
+
+                    Log::error(
+                        'Python Service Connection Error: ' .
+                        $e->getMessage()
+                    );
+                }
+
+            } catch (\Exception $e) {
+
+                Log::error(
+                    "Weather Monitor Error ({$city->cityName}): " .
+                    $e->getMessage()
+                );
             }
         }
+
+        $this->info('Weather monitoring completed successfully.');
+
         return Command::SUCCESS;
     }
 }
