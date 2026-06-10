@@ -80,7 +80,9 @@ class WeatherMonitorCommand extends Command
                     $pyResponse = Http::timeout(10)->post(
                         'http://127.0.0.1:8001/generateSmartAlerts',
                         [
-                            'weatherData' => $weatherData
+                            'weatherData' => $weatherData,
+                            'city' => $city->cityName,
+                            'country' => $city->country
                         ]
                     );
 
