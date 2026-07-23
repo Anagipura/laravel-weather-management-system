@@ -139,7 +139,7 @@ def donation_reply(disaster_type="disaster", affected_region="affected areas"):
 
 def general_reply():
     return {
-        'reply': f"Thanks for asking! I'm your AI disaster management assistant, and I can help you with quite a few things related to {user_query}. "
+        'reply': f"Hello! I'm your AI disaster management assistant, and I can help you with quite a few things related to {user_query}. "
                  f"Specifically, I can provide: flood risk alerts, severe weather updates (storms, rain, etc.), safety guidance based on risk levels, "
                  f"emergency contact recommendations, donation opportunities for affected communities, and general disaster preparedness advice. "
                  f"Just let me know what you'd like to check—whether it's current conditions in a specific city, safety tips, or how to help others."
