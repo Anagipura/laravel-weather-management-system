@@ -190,6 +190,34 @@
             </div>
         </div>
 
+        <div class="donation-banner">
+            <div class="banner-content">
+                <div class="banner-icon">
+                    <i class="fas fa-hand-holding-heart"></i>
+                </div>
+
+                <div class="banner-text">
+                    <h2>Together We Can Make a Difference</h2>
+                    <p>
+                        Your contribution helps provide emergency relief, rescue support,
+                        medical supplies, food, and shelter for communities affected by
+                        natural disasters.
+                    </p>
+
+                    <div class="banner-actions">
+                        <a href="#donationForm" class="btn-donate">
+                            <i class="fas fa-heart"></i>
+                            Donate Now
+                        </a>
+
+                        <a href="#" class="btn-learn">
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Live Notifications Panel -->
         <div class="notifications-panel" id="notificationsPanel">
             <div class="panel-header">

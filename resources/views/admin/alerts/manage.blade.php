@@ -46,9 +46,9 @@
 
         <div class="container smart-Alert-management">
             <div class="smart-Alert-status">
-                <h3>Status Loading ...</h3>
+                <h3>Pending Alerts</h3>
             </div>
-            <div class=""></div>
+            @include('partials.pendingAlertsTable');
         </div>
     </div>
 

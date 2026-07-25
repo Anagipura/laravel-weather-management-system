@@ -82,6 +82,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     Route::delete('/alerts/{id}', [AlertRiskController::class, 'destroy'])->name('admin.alerts.delete');
 
+    Route::delete('pending_alert/{id}', [AlertRiskController::class, 'destroyPendingAlerts'])->name('admin.alerts.pending_alert_delete');
+
     Route::get('/alerts/search', [AlertRiskController::class, 'search'])->name('admin.alerts.search');
     // for Risk level management
     Route::get('/risk-levels', [RiskLevelController::class, 'index'])->name('admin.risk.index');

@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 from models.schemas import ChatRequest
-from services.chatbot_services import process_chat
+from services.gemini_service import process_payload
 
 router = APIRouter()
 
 
 @router.post("/chat")
 def chatBot(request: ChatRequest):
-    return process_chat(request)
+    return process_payload(request)

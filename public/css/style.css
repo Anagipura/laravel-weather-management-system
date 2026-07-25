@@ -1245,3 +1245,138 @@ body {
     padding: 0 15px;
     cursor: pointer;
 }
+
+.donation-banner{
+    background: var(--primary-gradient);
+    border-radius: var(--border-radius-xl);
+    padding: var(--spacing-xl);
+    color: white;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--card-shadow);
+}
+
+/* Decorative circles */
+.donation-banner::before{
+    content: "";
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,.08);
+    border-radius: 50%;
+    top: -120px;
+    right: -80px;
+}
+
+.donation-banner::after{
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    background: rgba(255,255,255,.06);
+    border-radius: 50%;
+    bottom: -80px;
+    left: -50px;
+}
+
+.banner-content{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xl);
+    position: relative;
+    z-index: 2;
+}
+
+.banner-icon{
+    min-width: 120px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.18);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter: blur(12px);
+    border:1px solid rgba(255,255,255,.2);
+}
+
+.banner-icon i{
+    font-size:3rem;
+    color:white;
+}
+
+.banner-text{
+    flex:1;
+}
+
+.banner-text h2{
+    margin-bottom:.8rem;
+    font-size:2rem;
+    font-weight:700;
+}
+
+.banner-text p{
+    color:rgba(255,255,255,.9);
+    line-height:1.7;
+    margin-bottom:1.5rem;
+    max-width:700px;
+}
+
+.banner-actions{
+    display:flex;
+    gap:1rem;
+    flex-wrap:wrap;
+}
+
+.btn-donate,
+.btn-learn{
+    display:inline-flex;
+    align-items:center;
+    gap:.6rem;
+    padding:.9rem 1.7rem;
+    border-radius:50px;
+    text-decoration:none;
+    font-weight:600;
+    transition:var(--transition-normal);
+}
+
+.btn-donate{
+    background:white;
+    color:#667eea;
+}
+
+.btn-donate:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
+
+.btn-learn{
+    border:2px solid rgba(255,255,255,.35);
+    color:white;
+}
+
+.btn-learn:hover{
+    background:rgba(255,255,255,.15);
+    transform:translateY(-3px);
+}
+
+/* Responsive */
+
+@media(max-width:768px){
+
+    .banner-content{
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .banner-actions{
+        justify-content:center;
+    }
+
+    .banner-text h2{
+        font-size:1.7rem;
+    }
+
+}

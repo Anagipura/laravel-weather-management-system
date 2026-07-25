@@ -52,7 +52,7 @@ class ChatBotController extends Controller
                 ], 500);
             }
 
-            // Always return JSON with "reply"
+            // return JSON with "reply"
             $reply = $response->json();
 
             return response()->json([

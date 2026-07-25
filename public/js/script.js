@@ -134,7 +134,7 @@ $(document).ready(function () {
                  botMsg.textContent = response.reply;
                  messages.appendChild(botMsg);
                  messages.scrollTop = messages.scrollHeight;
-                 console.log("success");
+
              },
              error: function (xhr, status, error) {
                  const errorMsg = document.createElement('div');
@@ -142,7 +142,6 @@ $(document).ready(function () {
                  errorMsg.textContent =  xhr.responseJSON.reply;
                  messages.appendChild(errorMsg);
                  messages.scrollTop = messages.scrollHeight;
-                 console.log("Bot response error!", error, status, xhr);
              }
          });
 

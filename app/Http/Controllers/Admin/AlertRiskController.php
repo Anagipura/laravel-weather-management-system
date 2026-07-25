@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pending_alerts;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use App\Models\Alert;
@@ -25,7 +26,8 @@ class AlertRiskController extends Controller
     public function manageAlerts() { // for alert management view
 
         $alerts = Alert::latest()->get();
-        return view('admin.alerts.manage', compact('alerts'));
+        $pending_alerts = Pending_alerts::latest()->get();
+        return view('admin.alerts.manage', compact('alerts', "pending_alerts"));
     }
 
     public function store(Request $request) { // store alerts
@@ -71,6 +73,12 @@ class AlertRiskController extends Controller
         $alerts = $query->latest()->get();
 
         return view('partials.alertTable', compact('alerts'));
+    }
+
+    public function destroyPendingAlerts($id)
+    {
+        Pending_alerts::findOrFail($id)->delete();
+        return back()->with('success', 'Alert deleted!');
     }
 }
 
